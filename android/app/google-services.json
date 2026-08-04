@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "66228469113",
+    "project_id": "abhaya-safety-app",
+    "storage_bucket": "abhaya-safety-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:66228469113:android:7eec2684db498641e1c3a8",
+        "android_client_info": {
+          "package_name": "com.abhaya.abhaya"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "66228469113-r15mg9qvac8cgag5ct7vni1roe0r614k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.abhaya.abhaya",
+            "certificate_hash": "ce050c4b86ac0d0872361f61bad198519d2175b1"
+          }
+        },
+        {
+          "client_id": "66228469113-ok8r8hdvghm9d8j57l59mp2b2ttqjfr3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPSZE8199C73n3W7X4JQta_bsyf680ehg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "66228469113-ok8r8hdvghm9d8j57l59mp2b2ttqjfr3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

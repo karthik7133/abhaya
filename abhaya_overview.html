@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Abhaya — App Build Overview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #ffffff;
+    color: #1a1a2e;
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 48px 60px;
+  }
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    border-bottom: 3px solid #00D4AA;
+    padding-bottom: 20px;
+    margin-bottom: 32px;
+  }
+  .logo-badge {
+    background: linear-gradient(135deg, #0B0F19, #1a2540);
+    color: #00D4AA;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: 2px solid #00D4AA44;
+  }
+  .header-text h1 {
+    font-size: 24px; font-weight: 800; color: #0B0F19;
+  }
+  .header-text p {
+    font-size: 12px; color: #666; margin-top: 3px;
+  }
+  /* ── Section titles ── */
+  h2 {
+    font-size: 15px; font-weight: 700; color: #0B0F19;
+    margin: 28px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1.5px solid #e5e7eb;
+    display: flex; align-items: center; gap: 8px;
+  }
+  h2 .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    display: inline-block;
+  }
+  h3 { font-size: 13px; font-weight: 600; color: #1a1a2e; margin: 14px 0 6px; }
+  /* ── Cards ── */
+  .card-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 4px;
+  }
+  .card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .card .card-title {
+    font-weight: 700; font-size: 12.5px; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .card p { font-size: 12px; color: #4a5568; line-height: 1.55; }
+  /* ── Tables ── */
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 12px; margin-bottom: 8px;
+  }
+  th {
+    background: #0B0F19; color: #ffffff;
+    padding: 8px 12px; text-align: left;
+    font-weight: 600; font-size: 11px; letter-spacing: 0.5px;
+  }
+  th:first-child { border-radius: 6px 0 0 6px; }
+  th:last-child  { border-radius: 0 6px 6px 0; }
+  td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; color: #374151; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #fafafa; }
+  /* ── Badges ── */
+  .badge {
+    display: inline-block; padding: 2px 8px;
+    border-radius: 20px; font-size: 10px; font-weight: 600;
+    letter-spacing: 0.4px;
+  }
+  .badge-green  { background: #d1fae5; color: #065f46; }
+  .badge-yellow { background: #fef3c7; color: #92400e; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  /* ── Score weights ── */
+  .weight-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .weight-bar .label { width: 120px; font-size: 12px; font-weight: 500; color: #374151; }
+  .weight-bar .bar-wrap { flex: 1; background: #e5e7eb; border-radius: 4px; height: 8px; }
+  .weight-bar .bar-fill { height: 8px; border-radius: 4px; }
+  .weight-bar .pct { font-size: 12px; font-weight: 700; width: 36px; text-align: right; }
+  /* ── Phase banner ── */
+  .phase-banner {
+    background: linear-gradient(135deg, #0B0F19 0%, #1a2540 100%);
+    color: white; border-radius: 12px; padding: 16px 20px;
+    margin-bottom: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .phase-banner .phase-num {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    color: #00D4AA; margin-bottom: 3px;
+  }
+  .phase-banner .phase-title { font-size: 15px; font-weight: 700; }
+  .phase-badge { display: flex; gap: 6px; flex-direction: column; align-items: flex-end; }
+  /* ── Placeholder table ── */
+  .placeholder-box {
+    background: #fff7ed; border: 1px solid #fed7aa;
+    border-radius: 10px; padding: 14px 16px; margin-top: 4px;
+  }
+  /* ── Footer ── */
+  .footer {
+    margin-top: 40px; border-top: 1px solid #e5e7eb;
+    padding-top: 14px; font-size: 11px; color: #9ca3af;
+    display: flex; justify-content: space-between;
+  }
+  /* ── Print ── */
+  @media print {
+    body { padding: 30px 40px; }
+    h2 { page-break-after: avoid; }
+    .card-grid { page-break-inside: avoid; }
+    table { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="header">
+  <div class="logo-badge">ABHAYA</div>
+  <div class="header-text">
+    <h1>App Build Overview</h1>
+    <p>AI-Driven Predictive Safety Ecosystem &nbsp;·&nbsp; Flutter &amp; Dart &nbsp;·&nbsp; <strong>4 Phases Complete</strong> &nbsp;·&nbsp; July 2026</p>
+  </div>
+</div>
+
+<!-- ═══ ARCHITECTURE ═══ -->
+<h2><span class="dot" style="background:#00D4AA"></span>Architecture &amp; Stack</h2>
+<div class="card-grid">
+  <div class="card">
+    <div class="card-title">📱 Framework</div>
+    <p>Flutter (Dart SDK ≥ 3.3.0). Targets Android &amp; iOS. Locked to portrait orientation. Feature-based folder structure under <code>lib/features/</code>.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">⚙️ State Management</div>
+    <p>Riverpod v2 with <code>riverpod_annotation</code> code generation. <code>StateNotifierProvider</code> for GuardianState; <code>@riverpod</code> codegen for auth &amp; onboarding notifiers.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">🗺️ Routing</div>
+    <p>go_router v14 with async redirect guards: first-launch → onboarding, then → auth, then → home. No deep-links yet.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">🎨 Design System</div>
+    <p>Dark glassmorphism theme. Custom <code>GlassCard</code> &amp; <code>NeonButton</code> components. Font: <strong>Plus Jakarta Sans</strong> (5 weights). Animated via <code>flutter_animate</code>.</p>
+  </div>
+</div>
+
+<!-- ═══ SCREENS ═══ -->
+<h2><span class="dot" style="background:#FFC842"></span>Screens Built</h2>
+<table>
+  <tr><th>Screen</th><th>File</th><th>Status</th><th>Key Details</th></tr>
+  <tr>
+    <td><strong>Onboarding</strong></td>
+    <td><code>onboarding_screen.dart</code></td>
+    <td><span class="badge badge-green">✅ Complete</span></td>
+    <td>Multi-slide intro. Persisted via SharedPreferences. Shows only on first launch.</td>
+  </tr>
+  <tr>
+    <td><strong>Auth</strong></td>
+    <td><code>auth_screen.dart</code></td>
+    <td><span class="badge badge-green">✅ Complete</span></td>
+    <td>Role picker (User / Guardian / Responder). Sign-in &amp; Sign-up flows. Form validation. Mock API with simulated delay.</td>
+  </tr>
+  <tr>
+    <td><strong>Home Dashboard</strong></td>
+    <td><code>home_screen.dart</code></td>
+    <td><span class="badge badge-green">✅ Complete</span></td>
+    <td>~800 lines. Threat gauge, telemetry grid, status cards, bottom nav, SOS button, emergency overlay.</td>
+  </tr>
+</table>
+
+<!-- ═══ PHASES ═══ -->
+<h2><span class="dot" style="background:#FF0055"></span>Implementation Phases</h2>
+
+<div class="phase-banner">
+  <div>
+    <div class="phase-num">PHASE 1</div>
+    <div class="phase-title">Foundation — UI, Auth &amp; Onboarding</div>
+  </div>
+  <div class="phase-badge">
+    <span class="badge badge-green">Complete</span>
+  </div>
+</div>
+
+<div class="phase-banner">
+  <div>
+    <div class="phase-num">PHASE 2</div>
+    <div class="phase-title">Background Guardian Service &amp; Sensor Telemetry</div>
+  </div>
+  <div class="phase-badge">
+    <span class="badge badge-green">Complete</span>
+  </div>
+</div>
+
+<div class="phase-banner">
+  <div>
+    <div class="phase-num">PHASE 3</div>
+    <div class="phase-title">Edge ML — Threat Fusion Engine &amp; Audio Classifier</div>
+  </div>
+  <div class="phase-badge">
+    <span class="badge badge-green">Complete</span>
+  </div>
+</div>
+
+<div class="phase-banner">
+  <div>
+    <div class="phase-num">PHASE 4</div>
+    <div class="phase-title">Cloud SOS Dispatch, Real Device APIs &amp; Evidence Vault</div>
+  </div>
+  <div class="phase-badge">
+    <span class="badge badge-green">Complete</span>
+  </div>
+</div>
+
+<!-- ═══ GUARDIAN SERVICE ═══ -->
+<h2><span class="dot" style="background:#00D4AA"></span>Guardian Mode — Background Service</h2>
+<p style="margin-bottom:10px;color:#4a5568;font-size:12px;">Runs in a dedicated Dart isolate via <code>flutter_background_service</code>. User-initiated (not auto-start).</p>
+<table>
+  <tr><th>Sensor / Event</th><th>Frequency</th><th>Threshold / Trigger</th><th>Action</th></tr>
+  <tr>
+    <td>📍 GPS Position</td>
+    <td>Every 5 seconds</td>
+    <td>—</td>
+    <td>Updates foreground notification + broadcasts <code>updateTelemetry</code></td>
+  </tr>
+  <tr>
+    <td>⚡ Accelerometer</td>
+    <td>Live stream (normal interval)</td>
+    <td>Magnitude &gt; 30 m/s²</td>
+    <td>Broadcasts <code>abnormalMotionDetected</code> event</td>
+  </tr>
+  <tr>
+    <td>🔄 Gyroscope</td>
+    <td>Live stream (normal interval)</td>
+    <td>Rotation &gt; 15 rad/s</td>
+    <td>Broadcasts <code>abnormalRotationDetected</code> event</td>
+  </tr>
+  <tr>
+    <td>🎙️ Microphone</td>
+    <td>Continuous PCM stream</td>
+    <td>1-second inference window</td>
+    <td>Feeds AudioClassifier → ThreatFusionEngine → score update</td>
+  </tr>
+</table>
+
+<!-- ═══ THREAT FUSION ENGINE ═══ -->
+<h2><span class="dot" style="background:#FF0055"></span>Threat Fusion Engine</h2>
+<p style="margin-bottom:12px;color:#4a5568;font-size:12px;">Fully on-device heuristic + ML scoring. Outputs a real-time Threat Score (0–100) with temporal decay.</p>
+
+<div class="weight-bar">
+  <span class="label">🎙️ Audio Distress</span>
+  <div class="bar-wrap"><div class="bar-fill" style="width:55%;background:#00D4AA;"></div></div>
+  <span class="pct" style="color:#00D4AA">55%</span>
+</div>
+<div class="weight-bar">
+  <span class="label">⚡ Sudden Motion</span>
+  <div class="bar-wrap"><div class="bar-fill" style="width:35%;background:#FFC842;"></div></div>
+  <span class="pct" style="color:#FFC842">35%</span>
+</div>
+<div class="weight-bar">
+  <span class="label">🌙 Time Context</span>
+  <div class="bar-wrap"><div class="bar-fill" style="width:10%;background:#9ca3af;"></div></div>
+  <span class="pct" style="color:#9ca3af">10%</span>
+</div>
+
+<table style="margin-top:12px;">
+  <tr><th>Threat Level</th><th>Score Range</th><th>UI Colour</th><th>Action</th></tr>
+  <tr><td>🟢 SAFE</td><td>0 – 74</td><td>Teal (#00D4AA)</td><td>Normal monitoring</td></tr>
+  <tr><td>🟡 ELEVATED</td><td>75 – 89</td><td>Amber (#FFC842)</td><td>Ambient glow turns amber</td></tr>
+  <tr><td>🔴 CRITICAL</td><td>90 – 100</td><td>Crimson (#FF0055)</td><td>Emergency overlay fires automatically</td></tr>
+</table>
+<p style="margin-top:8px;font-size:11px;color:#6b7280;">Temporal decay: score does not drop instantly — 5% decay per cycle when threat subsides.</p>
+
+<!-- ═══ AUDIO CLASSIFIER ═══ -->
+<h2><span class="dot" style="background:#FFC842"></span>Audio Classifier (TFLite)</h2>
+<div class="card-grid">
+  <div class="card">
+    <div class="card-title">🎯 Model Specs</div>
+    <p>16 kHz mono PCM input. 1-second window = 15,600 samples. Output classes: <strong>Background, Scream, Help, Crying</strong>. Distress threshold: probability &gt; 65%.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">🔄 Fallback Mode</div>
+    <p>If no <code>.tflite</code> file is present in <code>assets/ml/</code>, falls back to an <strong>RMS amplitude heuristic</strong> (RMS &gt; 0.15 = distress). Pipeline stays functional during development.</p>
+  </div>
+</div>
+
+<!-- ═══ HOME DASHBOARD ═══ -->
+<h2><span class="dot" style="background:#00D4AA"></span>Home Dashboard — UI Components</h2>
+<table>
+  <tr><th>Component</th><th>Description</th></tr>
+  <tr><td><strong>Threat Score Gauge</strong></td><td>Custom <code>CustomPainter</code> arc with neon glow. Color-shifts teal → amber → crimson. Animated score counter.</td></tr>
+  <tr><td><strong>Guardian Toggle</strong></td><td>Starts/stops background service. Shows live status (GPS · Accel · Gyro live) with error messages.</td></tr>
+  <tr><td><strong>Live Telemetry Grid</strong></td><td>GPS coordinates, speed (km/h), altitude (m), accuracy (±m). Fade-in animation when guardian activates.</td></tr>
+  <tr><td><strong>Signal Bars</strong></td><td>4 animated bars: Audio Distress · Motion · Location Risk · Time Context.</td></tr>
+  <tr><td><strong>Status Cards</strong></td><td>2×2 grid: Heart Rate · Location · Battery · BLE Band.</td></tr>
+  <tr><td><strong>SOS Button</strong></td><td>Pulsing crimson ring animation in bottom nav. Confirmation dialog before triggering.</td></tr>
+  <tr><td><strong>Emergency Overlay</strong></td><td>Full-screen glassmorphic modal. Auto-fires when threat score ≥ 90. Pulsing warning icon.</td></tr>
+  <tr><td><strong>Motion Alert Snackbar</strong></td><td>Appears on abnormal impact or rapid rotation event. Shows magnitude in m/s².</td></tr>
+  <tr><td><strong>Bottom Navigation</strong></td><td>5 tabs: Guardian · Route · SOS · Community · Profile. Floating glassmorphic bar.</td></tr>
+</table>
+
+<!-- ═══ DEPENDENCIES ═══ -->
+<h2><span class="dot" style="background:#9ca3af"></span>Key Dependencies</h2>
+<table>
+  <tr><th>Package</th><th>Version</th><th>Purpose</th></tr>
+  <tr><td><code>flutter_riverpod</code></td><td>^2.5.1</td><td>State management</td></tr>
+  <tr><td><code>go_router</code></td><td>^14.2.0</td><td>Declarative routing with guards</td></tr>
+  <tr><td><code>flutter_background_service</code></td><td>^5.0.10</td><td>Background isolate / foreground service</td></tr>
+  <tr><td><code>flutter_local_notifications</code></td><td>^17.2.3</td><td>Persistent foreground notification</td></tr>
+  <tr><td><code>geolocator</code></td><td>^13.0.2</td><td>GPS position &amp; permissions</td></tr>
+  <tr><td><code>sensors_plus</code></td><td>^6.1.1</td><td>Accelerometer &amp; Gyroscope streams</td></tr>
+  <tr><td><code>tflite_flutter</code></td><td>^0.10.4</td><td>On-device ML inference</td></tr>
+  <tr><td><code>record</code></td><td>^5.0.5</td><td>Microphone PCM stream capture</td></tr>
+  <tr><td><code>flutter_animate</code></td><td>^4.5.0</td><td>Animation DSL</td></tr>
+  <tr><td><code>shared_preferences</code></td><td>^2.2.3</td><td>Onboarding &amp; session persistence</td></tr>
+  <tr><td><code>permission_handler</code></td><td>^11.3.1</td><td>Runtime permission requests</td></tr>
+</table>
+
+<!-- ═══ PLACEHOLDERS ═══ -->
+<h2><span class="dot" style="background:#FFC842"></span>Placeholders &amp; Phase 4 Work</h2>
+<div class="placeholder-box">
+<table style="margin-bottom:0;">
+  <tr><th>Item</th><th>Previous State</th><th>Phase 4 Status</th></tr>
+  <tr><td>🔐 Auth API</td><td>Mocked with <code>Future.delayed</code></td><td><span class="badge badge-green">✅ Real Firebase Auth</span></td></tr>
+  <tr><td>🚨 SOS Dispatch</td><td>UI only — no real alert sent</td><td><span class="badge badge-green">✅ FCM push to guardians via backend</span></td></tr>
+  <tr><td>❤️ Heart Rate</td><td>Hardcoded 72 bpm</td><td><span class="badge badge-green">✅ Live BLE wearable stream</span></td></tr>
+  <tr><td>🔋 Battery</td><td>Hardcoded 84%</td><td><span class="badge badge-green">✅ Real device battery_plus API</span></td></tr>
+  <tr><td>📡 BLE Band</td><td>Shows "Off"</td><td><span class="badge badge-green">✅ Full scan → pair → connect flow</span></td></tr>
+  <tr><td>🤖 TFLite Model</td><td>No model file (amplitude fallback)</td><td><span class="badge badge-green">✅ Model asset integrated &amp; active</span></td></tr>
+  <tr><td>🗺️ Safe Route tab</td><td>Icon only, no screen</td><td><span class="badge badge-green">✅ Full screen with mock routing</span></td></tr>
+  <tr><td>👥 Guardians tab</td><td>Icon only, no screen</td><td><span class="badge badge-green">✅ Full trust-circle management</span></td></tr>
+  <tr><td>📁 Evidence tab</td><td>Icon only, no screen</td><td><span class="badge badge-green">✅ Evidence Vault with capture &amp; gallery</span></td></tr>
+</table>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<div class="footer">
+  <span>Abhaya — AI Safety Ecosystem &nbsp;·&nbsp; v1.0.0+1</span>
+  <span>Generated July 2026 &nbsp;·&nbsp; Confidential</span>
+</div>
+
+</body>
+</html>
