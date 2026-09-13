@@ -4,7 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import { initFirebase, getFirebaseAdmin } from './config/firebase';
+import { initFirebase, isFirebaseReady, getFirebaseAdmin } from './config/firebase';
 import { User, Message, EmergencyEvent, LiveLocation, MoodTrend, IncidentReport, Journey, DeviceContact, TrustedContact } from './models';
 import { telemetryMonitor } from './middleware/telemetryMonitor';
 import healthRoutes from './routes/health';
@@ -89,6 +89,22 @@ app.use('/api/journeys', journeyRoutes);
 app.use('/api/contacts', contactsRoutes);
 app.use('/api/health', healthRoutes); // Advanced API Health Monitor
 
+// Root endpoint for status and health check
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'online',
+    service: 'Abhaya Backend API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      contacts: '/api/contacts',
+      users: '/api/users',
+      emergency: '/api/emergency',
+    },
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // ─── Error Handling ───────────────────────────────────────────────────────────
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('[Global Error]', err);
@@ -118,6 +134,10 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 
 // ─── Background Job: Cleanup Deleted Firebase Users ───────────────────────────
 async function cleanupDeletedUsers() {
+  if (!isFirebaseReady()) {
+    console.log('[Cleanup] ℹ️ Skipping user cleanup: Firebase service account not configured on this host.');
+    return;
+  }
   try {
     const firebaseUsers = new Set<string>();
     let pageToken: string | undefined = undefined;
