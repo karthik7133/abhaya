@@ -5,6 +5,18 @@ import os from 'os';
 const router = Router();
 
 /**
+ * General API Health check endpoint (/api/health)
+ */
+router.get('/', (req, res) => {
+  const isDbConnected = mongoose.connection.readyState === 1;
+  res.status(isDbConnected ? 200 : 503).json({
+    status: isDbConnected ? 'healthy' : 'degraded',
+    database: isDbConnected ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+/**
  * Advanced API Health Monitor Route
  * Returns deep system diagnostics, memory usage, and database state.
  */
