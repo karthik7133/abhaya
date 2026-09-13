@@ -229,6 +229,10 @@ class AuthNotifier extends _$AuthNotifier {
     state = state.copyWith(isAppLocked: true);
   }
 
+  void setError(String message) {
+    state = state.copyWith(status: AuthStatus.error, errorMessage: message);
+  }
+
   void clearError() {
     state = state.copyWith(clearError: true, status: AuthStatus.idle);
   }

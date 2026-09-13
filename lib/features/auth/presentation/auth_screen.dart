@@ -556,15 +556,25 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _sendOTP(WidgetRef ref) async {
-    if (_phoneController.text.isEmpty) {
-      ref.read(authNotifierProvider.notifier).state = 
-          ref.read(authNotifierProvider.notifier).state.copyWith(
-                errorMessage: 'Please enter your phone number',
-              );
+    final text = _phoneController.text.trim();
+    if (text.isEmpty) {
+      ref.read(authNotifierProvider.notifier).setError('Please enter your phone number');
       return;
     }
 
-    final phoneNumber = '$_countryCode${_phoneController.text.trim()}';
+    var cleanDigits = text.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+    String phoneNumber;
+    if (cleanDigits.startsWith('+')) {
+      phoneNumber = cleanDigits;
+    } else {
+      cleanDigits = cleanDigits.replaceFirst(RegExp(r'^0+'), '');
+      final ccDigits = _countryCode.replaceAll('+', '');
+      if (cleanDigits.startsWith(ccDigits)) {
+        cleanDigits = cleanDigits.substring(ccDigits.length);
+      }
+      phoneNumber = '$_countryCode$cleanDigits';
+    }
+
     final notifier = ref.read(authNotifierProvider.notifier);
 
     await notifier.sendOTP(
@@ -581,10 +591,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   Future<void> _verifyOTP(WidgetRef ref, BuildContext context) async {
     if (_otpController.text.isEmpty || _verificationId == null) {
-      ref.read(authNotifierProvider.notifier).state = 
-          ref.read(authNotifierProvider.notifier).state.copyWith(
-                errorMessage: 'Please enter the OTP code',
-              );
+      ref.read(authNotifierProvider.notifier).setError('Please enter the OTP code');
       return;
     }
 
@@ -599,7 +606,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
 
     if (success && context.mounted) {
-      final isSet = await ref.read(settingsProvider.notifier).state.requireBiometric; 
+      final isSet = ref.read(settingsProvider).requireBiometric; 
       
       if (!isSet && context.mounted) {
         final enable = await showDialog<bool>(
