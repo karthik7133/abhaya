@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { EmergencyEvent, User, LiveLocation } from '../models';
+import { EmergencyEvent, User, LiveLocation, TrustedContact } from '../models';
 import { authMiddleware } from '../middleware/auth';
 import { broadcastPush, sendPushNotification } from '../config/firebase';
 
@@ -40,7 +40,11 @@ router.post('/sos', authMiddleware, async (req: Request, res: Response) => {
       });
     }
 
-    res.json({ success: true, event });
+    // Query trusted contacts who are set to receive SOS alerts
+    const trustedToNotify = await TrustedContact.find({ userId, notifyOnSos: true });
+    console.log(`[Emergency] SOS triggered by ${user.displayName}. Notified ${user.guardianIds.length} guardians and ${trustedToNotify.length} trusted contacts.`);
+
+    res.json({ success: true, event, notifiedTrustedCount: trustedToNotify.length });
   } catch (err) {
     console.error('[Emergency] SOS trigger error:', err);
     res.status(500).json({ error: 'Failed to trigger SOS' });

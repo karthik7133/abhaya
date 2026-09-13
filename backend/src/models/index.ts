@@ -249,3 +249,69 @@ const JourneySchema = new Schema<IJourney>(
 );
 
 export const Journey = mongoose.model<IJourney>('Journey', JourneySchema);
+
+// ─── Device Contact (Uploaded Phonebook) ───────────────────────────────────────
+
+export interface IDeviceContact extends Document {
+  userId: string;        // Firebase UID of the user who owns this contact
+  userName: string;      // Name of the user
+  name: string;          // Name of the contact from device phonebook
+  phoneNumbers: string[];// All phone numbers for this contact
+  primaryPhone: string;  // Primary / normalized phone number
+  emails?: string[];
+  deviceContactId?: string;
+  uploadedAt: Date;
+}
+
+const DeviceContactSchema = new Schema<IDeviceContact>(
+  {
+    userId:          { type: String, required: true, index: true },
+    userName:        { type: String, required: true },
+    name:            { type: String, required: true },
+    phoneNumbers:    { type: [String], default: [] },
+    primaryPhone:    { type: String, required: true },
+    emails:          { type: [String], default: [] },
+    deviceContactId: { type: String },
+    uploadedAt:      { type: Date, default: Date.now },
+  },
+  { timestamps: true }
+);
+
+DeviceContactSchema.index({ userId: 1, primaryPhone: 1 });
+DeviceContactSchema.index({ userId: 1, name: 1 });
+
+export const DeviceContact = mongoose.model<IDeviceContact>('DeviceContact', DeviceContactSchema);
+
+// ─── Trusted Contact (Selected for Emergency Notifications) ───────────────────
+
+export interface ITrustedContact extends Document {
+  userId: string;        // Firebase UID
+  userName: string;      // User's name
+  name: string;          // Contact's name
+  phone: string;         // Primary phone number
+  relationship?: string; // e.g., 'Parent', 'Spouse', 'Friend', 'Emergency'
+  notifyOnSos: boolean;  // Send alert on manual SOS
+  notifyOnThreat: boolean; // Send alert on high threat score
+  notifyOnNightMode: boolean; // Notify during night safety escort
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const TrustedContactSchema = new Schema<ITrustedContact>(
+  {
+    userId:            { type: String, required: true, index: true },
+    userName:          { type: String, required: true },
+    name:              { type: String, required: true },
+    phone:             { type: String, required: true },
+    relationship:      { type: String, default: 'Emergency Contact' },
+    notifyOnSos:       { type: Boolean, default: true },
+    notifyOnThreat:    { type: Boolean, default: true },
+    notifyOnNightMode: { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
+
+TrustedContactSchema.index({ userId: 1, phone: 1 }, { unique: true });
+
+export const TrustedContact = mongoose.model<ITrustedContact>('TrustedContact', TrustedContactSchema);
+

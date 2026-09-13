@@ -67,5 +67,7 @@
 	<string>Abhaya needs camera access to record evidence during emergencies and update your profile picture.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Abhaya needs photo library access to upload your profile picture.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Abhaya requires access to your contacts to allow you to select trusted emergency contacts and keep your safety circle updated.</string>
 </dict>
 </plist>

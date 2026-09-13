@@ -390,4 +390,83 @@ class BackendService {
     final res = await _get('/journeys');
     return res['journeys'] as List<dynamic>;
   }
+
+  // ── Contacts & Trusted Network ───────────────────────────────────────────────
+
+  /// Syncs and uploads all device phonebook contacts to backend MongoDB under this user.
+  static Future<Map<String, dynamic>> syncDeviceContacts(List<Map<String, dynamic>> contacts) async {
+    return await _post('/contacts/sync', {'contacts': contacts});
+  }
+
+  /// Retrieves synced device contacts for the current user.
+  static Future<List<dynamic>> getDeviceContacts({String? query, int limit = 200}) async {
+    final queryParam = query != null && query.isNotEmpty ? '?q=${Uri.encodeComponent(query)}&limit=$limit' : '?limit=$limit';
+    final res = await _get('/contacts$queryParam');
+    return (res['contacts'] as List<dynamic>?) ?? [];
+  }
+
+  /// Retrieves all user-selected trusted emergency contacts from backend MongoDB.
+  static Future<List<dynamic>> getTrustedContacts() async {
+    final res = await _get('/contacts/trusted');
+    return (res['trustedContacts'] as List<dynamic>?) ?? [];
+  }
+
+  /// Adds or updates a contact in the trusted contacts table.
+  static Future<Map<String, dynamic>> addTrustedContact({
+    required String name,
+    required String phone,
+    String relationship = 'Emergency Contact',
+    bool notifyOnSos = true,
+    bool notifyOnThreat = true,
+    bool notifyOnNightMode = true,
+  }) async {
+    return await _post('/contacts/trusted', {
+      'name': name,
+      'phone': phone,
+      'relationship': relationship,
+      'notifyOnSos': notifyOnSos,
+      'notifyOnThreat': notifyOnThreat,
+      'notifyOnNightMode': notifyOnNightMode,
+    });
+  }
+
+  /// Updates settings for a trusted contact by database ID.
+  static Future<Map<String, dynamic>> updateTrustedContact(
+    String id, {
+    String? name,
+    String? phone,
+    String? relationship,
+    bool? notifyOnSos,
+    bool? notifyOnThreat,
+    bool? notifyOnNightMode,
+  }) async {
+    return await _put('/contacts/trusted/$id', {
+      if (name != null) 'name': name,
+      if (phone != null) 'phone': phone,
+      if (relationship != null) 'relationship': relationship,
+      if (notifyOnSos != null) 'notifyOnSos': notifyOnSos,
+      if (notifyOnThreat != null) 'notifyOnThreat': notifyOnThreat,
+      if (notifyOnNightMode != null) 'notifyOnNightMode': notifyOnNightMode,
+    });
+  }
+
+  /// Removes a contact from trusted contacts by database ID.
+  static Future<void> removeTrustedContact(String id) async {
+    final res = await http.delete(
+      Uri.parse('$_kBaseUrl/contacts/trusted/$id'),
+      headers: await _headers(),
+    );
+    _checkStatus(res);
+  }
+
+  /// Removes a contact from trusted contacts by phone number.
+  static Future<void> removeTrustedContactByPhone(String phone) async {
+    final cleanPhone = Uri.encodeComponent(phone.replaceAll(RegExp(r'[\s\-\(\)\.]'), ''));
+    final res = await http.delete(
+      Uri.parse('$_kBaseUrl/contacts/trusted/by-phone/$cleanPhone'),
+      headers: await _headers(),
+    );
+    _checkStatus(res);
+  }
 }
+

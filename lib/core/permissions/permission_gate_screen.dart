@@ -9,17 +9,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
 import '../common_widgets/glass_card.dart';
 import '../common_widgets/neon_button.dart';
+import '../services/contact_sync_service.dart';
 
 // ─── Permission State Provider ────────────────────────────────────────────────
 
 class PermissionStatus2 {
   final bool locationGranted;
+  final bool phoneGranted;
+  final bool contactsGranted;
   final bool microphoneGranted;
   final bool notificationGranted;
   final bool isChecking;
 
   const PermissionStatus2({
     this.locationGranted = false,
+    this.phoneGranted = false,
+    this.contactsGranted = false,
     this.microphoneGranted = false,
     this.notificationGranted = false,
     this.isChecking = false,
@@ -27,16 +32,24 @@ class PermissionStatus2 {
 
   bool get allCriticalGranted => locationGranted;
   bool get allGranted =>
-      locationGranted && microphoneGranted && notificationGranted;
+      locationGranted &&
+      phoneGranted &&
+      contactsGranted &&
+      microphoneGranted &&
+      notificationGranted;
 
   PermissionStatus2 copyWith({
     bool? locationGranted,
+    bool? phoneGranted,
+    bool? contactsGranted,
     bool? microphoneGranted,
     bool? notificationGranted,
     bool? isChecking,
   }) {
     return PermissionStatus2(
       locationGranted: locationGranted ?? this.locationGranted,
+      phoneGranted: phoneGranted ?? this.phoneGranted,
+      contactsGranted: contactsGranted ?? this.contactsGranted,
       microphoneGranted: microphoneGranted ?? this.microphoneGranted,
       notificationGranted: notificationGranted ?? this.notificationGranted,
       isChecking: isChecking ?? this.isChecking,
@@ -50,21 +63,30 @@ class PermissionNotifier extends StateNotifier<PermissionStatus2> {
   Future<void> checkCurrentStatus() async {
     state = state.copyWith(isChecking: true);
     final loc = await Permission.locationWhenInUse.status;
+    final phone = await Permission.phone.status;
+    final contacts = await Permission.contacts.status;
     final mic = await Permission.microphone.status;
     final notif = await Permission.notification.status;
     state = PermissionStatus2(
       locationGranted: loc.isGranted,
+      phoneGranted: phone.isGranted,
+      contactsGranted: contacts.isGranted,
       microphoneGranted: mic.isGranted,
       notificationGranted: notif.isGranted,
       isChecking: false,
     );
+
+    // If contacts are already granted, trigger background upload silently
+    if (contacts.isGranted) {
+      ContactSyncService.syncContactsInBackground();
+    }
   }
 
   Future<bool> requestAll() async {
     state = state.copyWith(isChecking: true);
     HapticFeedback.mediumImpact();
 
-    // Request location first (critical)
+    // 1. Request location first (critical)
     final locStatus = await Permission.locationWhenInUse.request();
     state = state.copyWith(locationGranted: locStatus.isGranted);
 
@@ -73,11 +95,25 @@ class PermissionNotifier extends StateNotifier<PermissionStatus2> {
       await Permission.locationAlways.request();
     }
 
-    // Microphone
+    // 2. Phone permissions (critical for direct dial / emergency)
+    final phoneStatus = await Permission.phone.request();
+    state = state.copyWith(phoneGranted: phoneStatus.isGranted);
+
+    // 3. Contacts permission
+    final contactsStatus = await Permission.contacts.request();
+    final isContactsGranted = contactsStatus.isGranted;
+    state = state.copyWith(contactsGranted: isContactsGranted);
+
+    // Auto-sync contacts to DB in background if granted
+    if (isContactsGranted) {
+      ContactSyncService.syncContactsInBackground();
+    }
+
+    // 4. Microphone
     final micStatus = await Permission.microphone.request();
     state = state.copyWith(microphoneGranted: micStatus.isGranted);
 
-    // Notifications
+    // 5. Notifications
     final notifStatus = await Permission.notification.request();
     state = state.copyWith(
       notificationGranted: notifStatus.isGranted,
@@ -92,6 +128,13 @@ class PermissionNotifier extends StateNotifier<PermissionStatus2> {
     if (perm == Permission.locationWhenInUse ||
         perm == Permission.location) {
       state = state.copyWith(locationGranted: status.isGranted);
+    } else if (perm == Permission.phone) {
+      state = state.copyWith(phoneGranted: status.isGranted);
+    } else if (perm == Permission.contacts) {
+      state = state.copyWith(contactsGranted: status.isGranted);
+      if (status.isGranted) {
+        ContactSyncService.syncContactsInBackground();
+      }
     } else if (perm == Permission.microphone) {
       state = state.copyWith(microphoneGranted: status.isGranted);
     } else if (perm == Permission.notification) {
@@ -130,6 +173,22 @@ class _PermissionGateScreenState extends ConsumerState<PermissionGateScreen>
       critical: true,
     ),
     _PermissionItem(
+      icon: Icons.phone_in_talk_rounded,
+      color: Color(0xFF00D2FF),
+      title: 'Phone & Emergency Dial',
+      description:
+          'Allows 1-tap SOS calls to emergency services and immediate contact alerting.',
+      critical: true,
+    ),
+    _PermissionItem(
+      icon: Icons.quick_contacts_dialer_rounded,
+      color: Color(0xFF10B981),
+      title: 'Emergency Contacts',
+      description:
+          'Uploads and secures your phonebook so you can select trusted contacts to notify in danger.',
+      critical: false,
+    ),
+    _PermissionItem(
       icon: Icons.mic_rounded,
       color: AppColors.accentAmber,
       title: 'Microphone',
@@ -146,6 +205,7 @@ class _PermissionGateScreenState extends ConsumerState<PermissionGateScreen>
       critical: false,
     ),
   ];
+
 
   @override
   void initState() {
@@ -184,6 +244,7 @@ class _PermissionGateScreenState extends ConsumerState<PermissionGateScreen>
   Future<void> _markDoneAndProceed() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('permissions_granted', true);
+    ContactSyncService.syncContactsInBackground();
     if (mounted) context.go('/home');
   }
 
@@ -328,8 +389,12 @@ class _PermissionGateScreenState extends ConsumerState<PermissionGateScreen>
                   final isGranted = i == 0
                       ? status.locationGranted
                       : i == 1
-                          ? status.microphoneGranted
-                          : status.notificationGranted;
+                          ? status.phoneGranted
+                          : i == 2
+                              ? status.contactsGranted
+                              : i == 3
+                                  ? status.microphoneGranted
+                                  : status.notificationGranted;
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: _PermissionTile(
@@ -379,16 +444,16 @@ class _PermissionGateScreenState extends ConsumerState<PermissionGateScreen>
                 const SizedBox(height: 24),
 
                 // Privacy assurance
-                GlassCard(
+                const GlassCard(
                   borderRadius: 16,
-                  borderColor: Colors.white.withValues(alpha: 0.06),
+                  borderColor: Color(0x0FFFFFFF),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     child: Row(children: [
-                      const Icon(Icons.lock_outline_rounded,
+                      Icon(Icons.lock_outline_rounded,
                           color: AppColors.accentTeal, size: 18),
-                      const SizedBox(width: 12),
-                      const Expanded(
+                      SizedBox(width: 12),
+                      Expanded(
                         child: Text(
                           'Your data is encrypted end-to-end and never sold. '
                           'Location is only shared with your chosen guardians when you activate protection.',

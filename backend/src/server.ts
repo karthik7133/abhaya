@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { initFirebase, getFirebaseAdmin } from './config/firebase';
-import { User, Message, EmergencyEvent, LiveLocation, MoodTrend, IncidentReport, Journey } from './models';
+import { User, Message, EmergencyEvent, LiveLocation, MoodTrend, IncidentReport, Journey, DeviceContact, TrustedContact } from './models';
 import { telemetryMonitor } from './middleware/telemetryMonitor';
 import healthRoutes from './routes/health';
 
@@ -17,6 +17,7 @@ import locationRoutes from './routes/location';
 import moodRoutes from './routes/mood';
 import incidentRoutes from './routes/incidents';
 import journeyRoutes from './routes/journeys';
+import contactsRoutes from './routes/contacts';
 import rateLimit from 'express-rate-limit';
 
 dotenv.config();
@@ -85,6 +86,7 @@ app.use('/api/location', locationRoutes);
 app.use('/api/mood', moodRoutes);
 app.use('/api/incidents', incidentRoutes);
 app.use('/api/journeys', journeyRoutes);
+app.use('/api/contacts', contactsRoutes);
 app.use('/api/health', healthRoutes); // Advanced API Health Monitor
 
 // ─── Error Handling ───────────────────────────────────────────────────────────
@@ -139,6 +141,8 @@ async function cleanupDeletedUsers() {
           MoodTrend.deleteMany({ userId: uid }),
           IncidentReport.deleteMany({ userId: uid }),
           Journey.deleteMany({ userId: uid }),
+          DeviceContact.deleteMany({ userId: uid }),
+          TrustedContact.deleteMany({ userId: uid }),
         ]);
         console.log(`[Cleanup] Deleted data for uid: ${uid}`);
       }

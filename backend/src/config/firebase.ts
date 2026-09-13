@@ -8,7 +8,21 @@ dotenv.config();
 export function initFirebase(): void {
   if (admin.apps.length > 0) return;
 
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
   const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+
+  if (serviceAccountJson && serviceAccountJson.trim().length > 0) {
+    try {
+      const serviceAccount = JSON.parse(serviceAccountJson.trim()) as admin.ServiceAccount;
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+      });
+      console.log('[Firebase] ✅ Initialized with service account from FIREBASE_SERVICE_ACCOUNT_JSON env var');
+      return;
+    } catch (e) {
+      console.error('[Firebase] ❌ Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON:', e);
+    }
+  }
 
   if (serviceAccountPath && fs.existsSync(path.resolve(serviceAccountPath))) {
     const serviceAccount = JSON.parse(
@@ -17,12 +31,12 @@ export function initFirebase(): void {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
-    console.log('[Firebase] ✅ Initialized with service account');
+    console.log('[Firebase] ✅ Initialized with service account from file');
   } else {
     admin.initializeApp({
       credential: admin.credential.applicationDefault(),
     });
-    console.warn('[Firebase] ⚠️  No service account found. Set FIREBASE_SERVICE_ACCOUNT_PATH for local dev.');
+    console.warn('[Firebase] ⚠️  No service account found. Set FIREBASE_SERVICE_ACCOUNT_PATH or FIREBASE_SERVICE_ACCOUNT_JSON.');
   }
 }
 

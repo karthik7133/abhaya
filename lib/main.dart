@@ -13,6 +13,7 @@ import 'core/services/fcm_service.dart';
 import 'core/providers/settings_provider.dart';
 import 'core/services/local_db_service.dart';
 import 'core/services/offline_sync_service.dart';
+import 'core/services/contact_sync_service.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -48,6 +49,9 @@ void main() async {
   // to fcmAlertProvider from the background.
   final container = ProviderContainer();
   await FcmService.initialize(container);
+
+  // ── Silent background contact sync if user is logged in & permitted ────────
+  ContactSyncService.syncContactsInBackground();
 
   runApp(
     UncontrolledProviderScope(

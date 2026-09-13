@@ -49,6 +49,7 @@ dependencies:
 
   # Phase 4 — Device APIs & Evidence
   battery_plus: ^6.0.3
+  flutter_contacts: ^2.1.0
 
   # Backend API Client
   http: ^1.2.2
