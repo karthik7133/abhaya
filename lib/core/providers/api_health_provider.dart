@@ -5,9 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 
 // Reuse the base URL logic from BackendService
-const String _kBaseUrl = kDebugMode
-    ? 'http://192.168.1.27:5000/api'
-    : 'https://your-production-server.com/api';
+const String _kBaseUrl = 'https://abhaya-nzk5.onrender.com/api';
 
 enum ApiHealthStatus { unknown, healthy, degraded, down }
 

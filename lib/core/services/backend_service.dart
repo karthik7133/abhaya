@@ -12,9 +12,7 @@ import 'local_db_service.dart';
 // ── Network addresses (from ipconfig) ────────────────────────────────────────
 // • WiFi adapter     → 192.168.1.22   ← phone on same router  (USE THIS)
 // • Hotspot adapter  → 192.168.137.1  ← phone using PC hotspot (swap if needed)
-const String _kBaseUrl = kDebugMode
-    ? 'http://10.80.174.155:5000/api'   // ← WiFi IPv4 (change to 192.168.137.1 if using hotspot)
-    : 'https://your-production-server.com/api';
+const String _kBaseUrl = 'https://abhaya-nzk5.onrender.com/api';
 
 // ─── Response Models ──────────────────────────────────────────────────────────
 
