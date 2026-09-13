@@ -60,24 +60,30 @@ class AuthNotifier extends _$AuthNotifier {
     try {
       // Check if account exists before sending OTP
       if (!isSignUp) {
-        final exists = await BackendService.checkPhoneExists(phoneNumber);
-        if (!exists) {
-          state = state.copyWith(
-            status: AuthStatus.error,
-            errorMessage: 'No account on this number. Please create an account.',
-          );
-          return;
+        try {
+          final exists = await BackendService.checkPhoneExists(phoneNumber);
+          if (!exists) {
+            state = state.copyWith(
+              status: AuthStatus.error,
+              errorMessage: 'No account found with this number. Please create an account.',
+            );
+            return;
+          }
+        } catch (backendErr) {
+          debugPrint('[Auth] Backend checkPhoneExists warning: $backendErr');
+          // If the backend check fails due to cold-start or network, log it but don't block Firebase OTP
         }
       }
 
+      debugPrint('[Auth] Calling AuthService.verifyPhoneNumber for: $phoneNumber');
       await AuthService.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         verificationCompleted: (credential) async {
-          // Auto-retrieval case (Android) - sign in with the credential
           try {
             final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
             await _handleAuthSuccess(userCredential);
           } catch (e) {
+            debugPrint('[Auth] Auto-sign-in error: $e');
             state = state.copyWith(
               status: AuthStatus.error,
               errorMessage: 'Auto-sign-in failed. Please try manual OTP entry.',
@@ -85,23 +91,26 @@ class AuthNotifier extends _$AuthNotifier {
           }
         },
         verificationFailed: (exception) {
+          debugPrint('[Auth] Firebase verificationFailed: [${exception.code}] ${exception.message}');
           state = state.copyWith(
             status: AuthStatus.error,
             errorMessage: _mapFirebaseError(exception),
           );
         },
         codeSent: (verificationId, forceResendingToken) {
+          debugPrint('[Auth] Code successfully sent to $phoneNumber. verificationId: $verificationId');
           state = state.copyWith(status: AuthStatus.idle, clearError: true);
           onCodeSent(verificationId);
         },
         codeAutoRetrievalTimeout: (verificationId) {
-          // Handle timeout if needed
+          debugPrint('[Auth] Code auto-retrieval timeout: $verificationId');
         },
       );
     } catch (e) {
+      debugPrint('[Auth] Exception during sendOTP: $e');
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: 'Failed to send OTP. Please try again.',
+        errorMessage: 'Failed to send OTP: ${e.toString().replaceAll("Exception: ", "")}',
       );
     }
   }
@@ -244,6 +253,12 @@ class AuthNotifier extends _$AuthNotifier {
         return 'Invalid OTP code. Please try again.';
       case 'code-expired':
         return 'OTP code expired. Request a new one.';
+      case 'app-not-authorized':
+        return 'App not authorized in Firebase Console (SHA-1 fingerprint missing or Play Integrity check failed).';
+      case 'missing-client-identifier':
+        return 'App verification failed. Ensure SHA-1 is added in Firebase Console.';
+      case 'captcha-check-failed':
+        return 'reCAPTCHA check failed. Ensure Google Play Services are installed.';
       default:
         return e.message ?? 'Authentication failed. Please try again.';
     }
